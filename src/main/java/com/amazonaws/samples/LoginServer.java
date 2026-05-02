@@ -61,6 +61,38 @@ public class LoginServer {
             }
         });
 
+        server.createContext("/register", exchange -> {
+            if ("OPTIONS".equals(exchange.getRequestMethod())) {
+                sendCors(exchange, 200, "");
+                return;
+            }
+
+            if (!"POST".equals(exchange.getRequestMethod())) {
+                sendCors(exchange, 405, "{\"success\":false}");
+                return;
+            }
+
+            String body = readBody(exchange);
+
+            String email = extractValue(body, "email");
+            String userName = extractValue(body, "user_name");
+            String password = extractValue(body, "password");
+
+            Item existingUser = loginTable.getItem("email", email);
+
+            if (existingUser != null) {
+                sendCors(exchange, 200, "{\"success\":false}");
+            } else {
+                loginTable.putItem(new Item()
+                        .withPrimaryKey("email", email)
+                        .withString("user_name", userName)
+                        .withString("password", password)
+                );
+
+                sendCors(exchange, 200, "{\"success\":true}");
+            }
+        });
+
         server.start();
         System.out.println("Login server running on http://localhost:8080");
     }
