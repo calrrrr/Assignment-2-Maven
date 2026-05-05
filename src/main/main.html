@@ -3,8 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .main-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            width: 100vh;
+            height: 100vh;
+            padding: 10px;
+            background: #ffffff;
+            border-radius: 10px;
+        }
+
+        .user-area {
+
+        }
+
+        .subscription-area {
+
+        }
+
+        .query-area {
+
+        }
+
+        .logout-button {
+
+        }
+
+    </style>
 </head>
 <body>
+<div class="main-page">
+    <div class="user-area">
+        <!-- Set to find username for logged-in user -->
+        <h1 id="username"> User </h1>
+    </div>
 
+    <div class="subscription-area">
+        <h2> Subscriptions </h2>
+        <div id="subscription-list"></div>
+        <p id="errormessage"></p>
+
+    </div>
+
+    <div class="query-area">
+        <!-- Search Fields -->
+        <h2> Query </h2>
+        <input type="text" id="title" placeholder="search title here"/>
+        <input type="text" id="year" placeholder="search year here"/>
+        <input type="text" id="artist" placeholder="search artist here"/>
+        <input type="text" id="album" placeholder="search album here"/>
+        <button onClick="query()"> query </button>
+
+        <p id="messagearea"></p>
+
+        <div id="query-results"></div>
+
+    </div>
+
+    <div class="logout-button">
+        <button onClick="logout()"> Logout </button>
+    </div>
+</div>
+    <script>
+        async function logout(){
+            // Set User to null
+
+
+            // Set Page Back to Log in
+            window.location.href = "login.html"
+        }
+
+        async function subscriptions(){
+            try {
+                const res = await fetch("/api/subscriptions");
+
+                if (!res.ok) {
+                    document.getElementById("subscription-list").innerHTML = "<p> Error Loading Subscriptions </p>"
+                    return;
+                }
+
+                const data = await res.json();
+                renderSubscriptions(data);
+            } catch (error) {
+                document.getElementById("subscription-list").innerHTML = "<p> Bigger Error Loading Subscriptions </p>"
+            }
+        }
+
+        function removeSub(){
+
+        }
+
+        async function query() {
+            // Search Function
+            const title = document.getElementById("title").value;
+            const year = document.getElementById("year").value;
+            const artist = document.getElementById("artist").value;
+            const album = document.getElementById("album").value;
+
+            const messagearea = document.getElementById("messagearea");
+            const results = document.getElementById("query-results");
+
+            messagearea.textContent = "";
+            results.textContent = "";
+
+            // No Results Found
+            if (!title && !year && !artist && !album){
+                messagearea.textContent = "Please enter at least 1 field"
+                return;
+            }
+
+            if (title || year || artist || album) {
+
+            }
+
+            try {
+                const response = await fetch("/search", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({title, year, artist, album})
+                });
+            } catch (error) {
+                messagearea.textContent = "Connection not found"
+            }
+        }
+
+        function renderSubscriptions(subscriptions) {
+            const container = document.getElementById("subscription-list");
+
+            if (!subscriptions) {
+                container.innerHTML = "<p> No Subscriptions Found </p>"
+                return;
+            }
+
+            container.innerHTML = subscriptions.map(song => `
+            <div class="subscription-card">
+                <p><b>${song.title}</b></p>
+                <p><b>${song.year}</b></p>
+                <p><b>${song.artist}</b></p>
+                <p><b>${song.album}</b></p>
+                <img src="${song.imageUrl}" alt="${song.title}">
+                <button onClick="removeSub()"> Remove </button>
+                </div>`).join("");
+        }
+    </script>
 </body>
 </html>
