@@ -14,11 +14,15 @@ public class MusicCreateTable {
 
     public static void main(String[] args) throws Exception {
 
+//        AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
+//                .withEndpointConfiguration(
+//                        new AwsClientBuilder.EndpointConfiguration(
+//                                "http://localhost:8000",
+//                                Regions.US_EAST_1.getName()))
+//                .build();
+
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
-                .withEndpointConfiguration(
-                        new AwsClientBuilder.EndpointConfiguration(
-                                "http://localhost:8000",
-                                Regions.US_EAST_1.getName()))
+                .withRegion(Regions.US_EAST_1)
                 .build();
 
         DynamoDB dynamoDB = new DynamoDB(client);
