@@ -15,11 +15,15 @@ public class MusicLoadData {
 
     public static void main(String[] args) throws Exception {
 
+//        AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
+//                .withEndpointConfiguration(
+//                        new AwsClientBuilder.EndpointConfiguration(
+//                                "http://localhost:8000",
+//                                Regions.US_EAST_1.getName()))
+//                .build();
+
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
-                .withEndpointConfiguration(
-                        new AwsClientBuilder.EndpointConfiguration(
-                                "http://localhost:8000",
-                                Regions.US_EAST_1.getName()))
+                .withRegion(Regions.US_EAST_1)
                 .build();
 
         DynamoDB dynamoDB = new DynamoDB(client);
@@ -41,7 +45,7 @@ public class MusicLoadData {
             String artist = (String) song.get("artist");
             String year = (String) song.get("year");
             String album = (String) song.get("album");
-            String imageUrl = (String) song.get("img_url");
+            String artist_image_url = (String) song.get("img_url");
 
             String artistYear = artist + "#" + year;
             String albumYear = album + "#" + year;
@@ -51,7 +55,7 @@ public class MusicLoadData {
                     .withString("artist", artist)
                     .withString("year", year)
                     .withString("album", album)
-                    .withString("image_url", imageUrl)
+                    .withString("image_url", artist_image_url)
                     .withString("album_year", albumYear);
 
             table.putItem(item);
