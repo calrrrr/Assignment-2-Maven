@@ -1,5 +1,3 @@
-package com.amazonaws.samples;
-
 import java.io.FileReader;
 import java.nio.file.Paths;
 
