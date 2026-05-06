@@ -2,43 +2,157 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Music Subscription Main</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #f4f6f8;
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
         }
 
         .main-page {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            width: 100vh;
-            height: 100vh;
-            padding: 10px;
             background: #ffffff;
             border-radius: 10px;
+            width: 800px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .user-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
 
+        .user-area h1 {
+            margin: 0;
+            font-size: 28px;
         }
 
         .subscription-area {
-
+            margin-bottom: 30px;
         }
 
         .query-area {
-
+            margin-bottom: 20px;
         }
 
         .logout-button {
+            width: auto;
+        }
 
+        h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .query-area input {
+            width: calc(25% - 8px);
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .logout-button button {
+            background: #dc2626;
+            width: auto;
+            padding: 10px 20px;
+            margin: 0;
+        }
+
+        .logout-button button:hover {
+            background: #b91c1c;
+        }
+
+        .subscription-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .subscription-card img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #ddd;
+        }
+
+        .song-details {
+            flex-grow: 1;
+        }
+
+        .song-details p {
+            margin: 3px 0;
+        }
+
+        .subscription-card button {
+            width: auto;
+            padding: 8px 14px;
+            background: #dc2626;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .subscription-card button:hover {
+            background: #b91c1c;
+        }
+
+        .message {
+            margin-top: 15px;
+            text-align: center;
+            color: red;
+        }
+
+        #errormessage {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .empty {
+            color: #666;
+            font-style: italic;
         }
 
     </style>
@@ -48,61 +162,107 @@
     <div class="user-area">
         <!-- Set to find username for logged-in user -->
         <h1 id="username"> User </h1>
+        <div class="logout-button">
+            <button onClick="logout()">Logout</button>
+        </div>
     </div>
 
     <div class="subscription-area">
         <h2> Subscriptions </h2>
-        <div id="subscription-list"></div>
+        <div id="subscription-list">
+            <p class="empty">Loading...</p>
+        </div>
         <p id="errormessage"></p>
-
     </div>
 
     <div class="query-area">
         <!-- Search Fields -->
         <h2> Query </h2>
-        <input type="text" id="title" placeholder="search title here"/>
-        <input type="text" id="year" placeholder="search year here"/>
-        <input type="text" id="artist" placeholder="search artist here"/>
-        <input type="text" id="album" placeholder="search album here"/>
-        <button onClick="query()"> query </button>
+        <input type="text" id="title" placeholder="Title"/>
+        <input type="text" id="year" placeholder="Year"/>
+        <input type="text" id="artist" placeholder="Artist"/>
+        <input type="text" id="album" placeholder="Album"/>
+        <button onClick="query()"> Query </button>
 
-        <p id="messagearea"></p>
-
+        <p id="messagearea" class="error"></p>
         <div id="query-results"></div>
-
-    </div>
-
-    <div class="logout-button">
-        <button onClick="logout()"> Logout </button>
     </div>
 </div>
-    <script>
-        async function logout(){
-            // Set User to null
 
+    <script>
+        window.onload = function() {
+            const user_name = localStorage.getItem("user_name");
+            const email = localStorage.getItem("email");
+
+            if (!user_name || !email) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            document.getElementById("username").textContent = user_name;
+            subscriptions();
+        }
+
+        async function logout() {
+            // Set User to null
+            localStorage.removeItem("user_name");
+            localStorage.removeItem("email");
 
             // Set Page Back to Log in
             window.location.href = "login.html"
         }
 
-        async function subscriptions(){
+        async function subscriptions() {
+            const email = localStorage.getItem("email");
+            const errormessage = document.getElementById("errormessage");
+            errormessage.textContent = "";
+
             try {
-                const res = await fetch("/api/subscriptions");
+                const res = await fetch(`http://localhost:8080/getSubscriptions?email=${encodeURIComponent(email)}`);
 
                 if (!res.ok) {
-                    document.getElementById("subscription-list").innerHTML = "<p> Error Loading Subscriptions </p>"
-                    return;
+                document.getElementById("subscription-list").innerHTML = "<p>Error Loading Subscriptions</p>";
+                return;
                 }
 
                 const data = await res.json();
                 renderSubscriptions(data);
-            } catch (error) {
-                document.getElementById("subscription-list").innerHTML = "<p> Bigger Error Loading Subscriptions </p>"
+            }
+
+            catch (error) {
+                document.getElementById("subscription-list").innerHTML = "<p>Unable to connect to server</p>";
+                console.error(error);
             }
         }
 
-        function removeSub(){
+        async function removeSub(title, artist) {
+            const email = localStorage.getItem("email");
+            const errormessage = document.getElementById("errormessage");
 
+            try {
+                const response = await fetch("http://localhost:8080/removeSubscription", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify ({
+                        email: email,
+                        title: title,
+                        artist: artist
+                    })
+                });
+
+                if (response.ok) {
+                    subscriptions();
+                }
+                else {
+                    errormessage.textContent = "Failed to remove subscription";
+                }
+            }
+            catch (error) {
+                errormessage.textContent = "Unable to connect to server";
+                console.error(error);
+            }
         }
 
         async function query() {
@@ -116,7 +276,7 @@
             const results = document.getElementById("query-results");
 
             messagearea.textContent = "";
-            results.textContent = "";
+            results.innerHTML = "";
 
             // No Results Found
             if (!title && !year && !artist && !album){
@@ -124,41 +284,103 @@
                 return;
             }
 
-            if (title || year || artist || album) {
+            try {
+                const params = new URLSearchParams({title, year, artist, album});
+                const response = await fetch(`http://localhost:8080/queryMusic?${params}`);
 
+                if (!response.ok) {
+                    messagearea.textContent = "Error querying music";
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (!data || data.length === 0) {
+                    results.innerHTML = "<p class='empty'>No result is retrieved. Please query again</p>";
+                    return;
+                }
+
+                renderQueryResults(data);
             }
 
+            catch (error) {
+                messagearea.textContent = "Unable to connect to server";
+                console.error(error);
+            }
+        }
+
+        async function subscribe(song) {
+            const email = localStorage.getItem("email");
+            const messagearea = document.getElementById("messagearea");
+
             try {
-                const response = await fetch("/search", {
+                const response = await fetch("http://localhost:8080/addSubscription", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({title, year, artist, album})
+                    body: JSON.stringify({
+                        email: email,
+                        ...song
+                    })
                 });
-            } catch (error) {
-                messagearea.textContent = "Connection not found"
+
+                if (response.ok) {
+                    subscriptions();
+                } else {
+                    messagearea.textContent = "Failed to subscribe. Already subscribed?";
+                }
+            }
+
+            catch (error) {
+                messagearea.textContent = "Unable to connect to server";
+                console.error(error);
             }
         }
 
         function renderSubscriptions(subscriptions) {
             const container = document.getElementById("subscription-list");
 
-            if (!subscriptions) {
-                container.innerHTML = "<p> No Subscriptions Found </p>"
+            if (!subscriptions || subscriptions.length == 0) {
+                container.innerHTML = "<p class='empty'> No Subscriptions Found </p>"
                 return;
             }
 
             container.innerHTML = subscriptions.map(song => `
             <div class="subscription-card">
-                <p><b>${song.title}</b></p>
-                <p><b>${song.year}</b></p>
-                <p><b>${song.artist}</b></p>
-                <p><b>${song.album}</b></p>
-                <img src="${song.imageUrl}" alt="${song.title}">
-                <button onClick="removeSub()"> Remove </button>
-                </div>`).join("");
+                <img src="${song.artist_image_url || 'https://via.placeholder.com/60?text=No+Image'}"
+                     alt="${song.artist}"
+                     onerror="this.src='https://via.placeholder.com/60?text=No+Image'">
+                <div class="song-details">
+                    <p><b>${song.title}</b></p>
+                    <p>${song.artist} — ${song.year}</p>
+                    <p>Album: ${song.album}</p>
+                </div>
+                <button onClick="removeSub('${escapeJs(song.title)}', '${escapeJs(song.artist)}')">Remove</button>
+            </div>`).join("");
         }
+
+        function renderQueryResults(songs) {
+            const container = document.getElementById("query-results");
+
+            container.innerHTML = songs.map(song => `
+            <div class="subscription-card">
+                <img src="${song.artist_image_url || 'https://via.placeholder.com/60?text=No+Image'}"
+                     alt="${song.artist}"
+                     onerror="this.src='https://via.placeholder.com/60?text=No+Image'">
+                <div class="song-details">
+                    <p><b>${song.title}</b></p>
+                    <p>${song.artist} — ${song.year}</p>
+                    <p>Album: ${song.album}</p>
+                </div>
+                <button onClick='subscribe(${JSON.stringify(song)})'>Subscribe</button>
+            </div>`).join("");
+        }
+
+        function escapeJs(str) {
+            return str.replace(/'/g, "\\'");
+        }
+
     </script>
 </body>
 </html>
