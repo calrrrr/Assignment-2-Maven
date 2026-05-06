@@ -31,7 +31,7 @@ public class LoginServer {
         DynamoDB dynamoDB = new DynamoDB(client);
         Table loginTable = dynamoDB.getTable("login");
 
-        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", 8080), 0);
 
         server.createContext("/login", exchange -> {
             if ("OPTIONS".equals(exchange.getRequestMethod())) {
@@ -98,7 +98,7 @@ public class LoginServer {
         });
 
         server.start();
-        System.out.println("Login server running on http://localhost:8080");
+        System.out.println("Login server running on AWS");
     }
 
     private static String readBody(HttpExchange exchange) throws IOException {
