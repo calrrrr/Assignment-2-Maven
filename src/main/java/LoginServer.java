@@ -18,16 +18,16 @@ public class LoginServer {
 
     public static void main(String[] args) throws Exception {
 
-//        AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
-//                .withEndpointConfiguration(
-//                        new AwsClientBuilder.EndpointConfiguration(
-//                                "http://localhost:8000",
-//                                Regions.US_EAST_1.getName()))
-//                .build();
-
         AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
-                .withRegion(Regions.US_EAST_1)
+                .withEndpointConfiguration(
+                        new AwsClientBuilder.EndpointConfiguration(
+                                "http://localhost:8000",
+                                Regions.US_EAST_1.getName()))
                 .build();
+
+//        AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
+//                .withRegion(Regions.US_EAST_1)
+//                .build();
 
         DynamoDB dynamoDB = new DynamoDB(client);
         Table loginTable = dynamoDB.getTable("login");
@@ -246,7 +246,10 @@ public class LoginServer {
             String title = extractValue(body, "title");
             String artist = extractValue(body, "artist");
 
-            subscriptionsTable.deleteItem("email", extractValue(body, "email"), "title", title + "#" + artist);
+            subscriptionsTable.deleteItem(
+                    "email", extractValue(body, "email"),
+                    "title", title
+            );
             sendCors(exchange, 200, "{\"success\":true}");
         });
 
