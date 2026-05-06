@@ -108,6 +108,10 @@
             return;
         }
 
+        const API_BASE_URL = "http://34.229.248.122:8080";
+
+        const response = await fetch(`${API_BASE_URL}/login`, {
+
         try {
             const response = await fetch("/login", {
                 method: "POST",
