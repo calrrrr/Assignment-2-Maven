@@ -109,10 +109,8 @@
 
         const API_BASE_URL = "http://34.229.248.122:8080";
 
-        const response = await fetch(`${API_BASE_URL}/login`, {
-
         try {
-            const response = await fetch("/register", {
+            const response = await fetch("http://localhost:8080/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

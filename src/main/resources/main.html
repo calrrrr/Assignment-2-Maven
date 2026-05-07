@@ -235,7 +235,7 @@
             }
         }
 
-        async function removeSub(title, artist) {
+        async function removeSub(song) {
             const email = localStorage.getItem("email");
             const errormessage = document.getElementById("errormessage");
 
@@ -245,21 +245,19 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify ({
+                    body: JSON.stringify({
                         email: email,
-                        title: title,
-                        artist: artist
+                        title: song.title,
+                        artist: song.artist
                     })
                 });
 
                 if (response.ok) {
                     subscriptions();
-                }
-                else {
+                } else {
                     errormessage.textContent = "Failed to remove subscription";
                 }
-            }
-            catch (error) {
+            } catch (error) {
                 errormessage.textContent = "Unable to connect to server";
                 console.error(error);
             }
@@ -341,23 +339,29 @@
         function renderSubscriptions(subscriptions) {
             const container = document.getElementById("subscription-list");
 
-            if (!subscriptions || subscriptions.length == 0) {
-                container.innerHTML = "<p class='empty'> No Subscriptions Found </p>"
+            if (!subscriptions || subscriptions.length === 0) {
+                container.innerHTML = "<p class='empty'>No Subscriptions Found</p>";
                 return;
             }
 
-            container.innerHTML = subscriptions.map(song => `
-            <div class="subscription-card">
-                <img src="${song.artist_image_url || 'https://via.placeholder.com/60?text=No+Image'}"
-                     alt="${song.artist}"
-                     onerror="this.src='https://via.placeholder.com/60?text=No+Image'">
-                <div class="song-details">
-                    <p><b>${song.title}</b></p>
-                    <p>${song.artist} — ${song.year}</p>
-                    <p>Album: ${song.album}</p>
+            container.innerHTML = subscriptions.map((song, index) => `
+                <div class="subscription-card">
+                    <img src="${song.artist_image_url}">
+                    <div class="song-details">
+                        <p><b>${song.title}</b></p>
+                        <p>${song.artist} — ${song.year}</p>
+                        <p>Album: ${song.album}</p>
+                    </div>
+                    <button onclick="removeSubByIndex(${index})">Remove</button>
                 </div>
-                <button onClick="removeSub('${escapeJs(song.title)}', '${escapeJs(song.artist)}')">Remove</button>
-            </div>`).join("");
+            `).join("");
+
+            window.currentSubscriptions = subscriptions;
+        }
+
+        async function removeSubByIndex(index) {
+            const song = window.currentSubscriptions[index];
+            await removeSub(song);
         }
 
         function renderQueryResults(songs) {
